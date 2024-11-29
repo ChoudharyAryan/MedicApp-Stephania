@@ -1,10 +1,9 @@
-import 'dart:math';
+import 'dart:developer';
 
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medapp/ui/add_medic.dart';
-import 'package:medapp/ui/models/task_controller.dart';
 import '../db/inserdb.dart';
 import '../db/read_medicins.dart';
 
@@ -16,8 +15,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final _taskController = Get.put(TaskController());
-
   int currentPageIndex = 0;
   int date = 0;
   int year = 0;
@@ -30,7 +27,6 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
             await Get.to(() => const AddMedicationPage());
-            _taskController.getTasks();
           },
           label: const Text("+ Add Medication")),
       body: Container(
@@ -131,6 +127,7 @@ class _HomeState extends State<Home> {
                       );
                     });
               } else if (snapshot.hasError) {
+                //log('this is the error ${snapshot.error.toString()}');
                 return Center(
                     child: Text("failed to load data ${snapshot.error}"));
               }

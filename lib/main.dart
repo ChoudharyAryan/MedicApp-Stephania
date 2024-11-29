@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:medapp/db/db_helper.dart';
 import 'package:medapp/ui/functions.dart';
 import 'package:medapp/ui/home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await DBHelper.initDb();
   runApp(const MyApp());
 }
 

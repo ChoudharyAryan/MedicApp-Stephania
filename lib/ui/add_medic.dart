@@ -143,25 +143,23 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
       lastDate: DateTime(2100), // Adjust as needed
     );
 
-    if (pickedDate != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = pickedDate;
-          medicInfo = medicInfo.copyWith(
-              start_d: pickedDate.day,
-              start_y: pickedDate.year,
-              start_m: pickedDate.month,
-              startDate: DateFormat("d MMMM y").format(pickedDate));
-        } else {
-          _endDate = pickedDate;
-          medicInfo = medicInfo.copyWith(
-              end_d: pickedDate.day,
-              end_y: pickedDate.year,
-              end_m: pickedDate.month,
-              endDate: DateFormat("d MMMM y").format(pickedDate));
-        }
-      });
-    }
+    setState(() {
+      if (isStartDate) {
+        _startDate = pickedDate!;
+        medicInfo = medicInfo.copyWith(
+            start_d: pickedDate.day,
+            start_y: pickedDate.year,
+            start_m: pickedDate.month,
+            startDate: DateFormat("d MMMM y").format(pickedDate));
+      } else {
+        _endDate = pickedDate!;
+        medicInfo = medicInfo.copyWith(
+            end_d: pickedDate.day,
+            end_y: pickedDate.year,
+            end_m: pickedDate.month,
+            endDate: DateFormat("d MMMM y").format(pickedDate));
+      }
+    });
   }
 
   @override
