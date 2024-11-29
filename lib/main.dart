@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medapp/ui/functions.dart';
+import 'package:medapp/ui/history_screen.dart';
 import 'package:medapp/ui/home.dart';
 
 Future<void> main() async {

@@ -1,16 +1,11 @@
 import 'dart:developer';
-
 import 'package:sqflite/sqflite.dart';
-
 import 'getdb.dart';
 
 Future<List<Map<String, Object?>>> readMedicinsforDate(
     int date, int month, int year) async {
   Database db = await getDb();
   log("And This Is my DataBase DB : ${db.toString()}");
-  List<Map<String, dynamic>> schema =
-      await db.rawQuery("PRAGMA table_info(tasks)");
-  log(schema.toString());
   List<Map<String, Object?>> data = await db.query(
     "tasks",
     orderBy: "id",
