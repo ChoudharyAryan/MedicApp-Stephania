@@ -4,10 +4,9 @@ import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medapp/ui/add_medic.dart';
-
 import '../db/inserdb.dart';
 import '../db/read_medicins.dart';
-import 'history_screen.dart';
+import 'history_screen.dart' as hist;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -53,7 +52,7 @@ class _HomeState extends State<Home> {
           ),
 
           // Page 1: HistoryScreen Page
-          const HistoryScreen(),
+          const hist.HistoryScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

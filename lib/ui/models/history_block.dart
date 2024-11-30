@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-Container historyBlock(BuildContext context) {
+Container historyBlock(BuildContext context,
+    {required String name,
+    required String startDate,
+    required String endDate,
+    required List<String> times,
+    required int quantity}) {
   return Container(
     height: MediaQuery.of(context).size.height * 0.15,
     width: MediaQuery.of(context).size.width * 0.8,
@@ -13,7 +18,7 @@ Container historyBlock(BuildContext context) {
       ),
     ),
     padding: const EdgeInsets.all(15), // Optional padding inside the container
-    child: const Row(
+    child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
@@ -22,22 +27,22 @@ Container historyBlock(BuildContext context) {
           mainAxisAlignment: MainAxisAlignment.center, // Center text vertically
           children: [
             Text(
-              'Date to be filled',
-              style: TextStyle(fontSize: 16),
+              startDate,
+              style: const TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
-              "Name to be filled",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              name,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 5),
-            Text(
+            const SizedBox(height: 5),
+            const Text(
               "Status to be filled",
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
-        Icon(Icons.arrow_forward_ios, color: Colors.grey),
+        const Icon(Icons.arrow_forward_ios, color: Colors.grey),
       ],
     ),
   );
