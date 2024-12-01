@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -10,7 +11,7 @@ class NotificationService {
   static Future<void> initNotifications() async {
     final status = await Permission.notification.request();
     if (!status.isGranted) {
-      print("Notification permissions denied.");
+      log("Notification permissions denied.");
       return;
     }
     const AndroidInitializationSettings initializationSettingsAndroid =
