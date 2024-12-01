@@ -135,7 +135,7 @@ class _HomeState extends State<Home> {
                     child: ListTile(
                       title: Text(info.name),
                       subtitle: Text(
-                          "${info.quantity} dose ${info.recurrence} from\n${info.startDate}"),
+                          "${info.dosage} dose ${info.recurrence} from\n${info.startDate}"),
                       trailing: Text(info.endDate),
                     ),
                   ),

@@ -36,9 +36,17 @@ Container historyBlock(BuildContext context,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 5),
-            const Text(
-              "Status to be filled",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+            Row(
+              children: [
+                Text(
+                  "${times[0]} o'clock",
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Text("skipped")
+              ],
             ),
           ],
         ),

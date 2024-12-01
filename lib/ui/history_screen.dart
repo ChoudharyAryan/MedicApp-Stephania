@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:medapp/db/read_medicins.dart';
 import 'package:medapp/ui/models/history_block.dart';
 
@@ -59,34 +61,96 @@ class _HistoryScreenState extends State<HistoryScreen> {
   List<MedicInfo> allHistory = [];
   List<MedicInfo> history = [];
   bool isLoading = true;
-  TextEditingController search = TextEditingController();
+  final TextEditingController search = TextEditingController();
 
-  Future<void> fetchHistoryForYesterday() async {
+  List<MedicInfo> generateDailyBlocks(MedicInfo medic) {
+    final List<MedicInfo> dailyBlocks = [];
+    DateTime startDate;
+    DateTime endDate;
+
     try {
-      // Calculate yesterday's date
-      final DateTime yesterday =
-          DateTime.now().subtract(const Duration(days: 1));
-      final int day = yesterday.day;
-      final int month = yesterday.month;
-      final int year = yesterday.year;
-
-      // Fetch data for yesterday
-      List<Map<String, Object?>> data =
-          await readMedicinsforDate(day, month, year);
-
-      // If data exists, update the allHistory and history lists
-      if (data.isNotEmpty) {
-        setState(() {
-          allHistory = data
-              .map((e) => MedicInfo.fromJson(jsonDecode(e['data'].toString())))
-              .toList();
-          history = List.from(allHistory); // Initialize filtered list
-        });
-      }
+      final DateFormat dateFormat = DateFormat('d MMMM yyyy');
+      startDate = dateFormat.parse(medic.startDate);
+      endDate = dateFormat.parse(medic.endDate);
     } catch (e) {
-      debugPrint("Error fetching history for yesterday: $e");
+      log("Error parsing dates: $e");
+      return dailyBlocks;
+    }
+
+    DateTime currentDate = startDate;
+
+    while (!currentDate.isAfter(endDate)) {
+      for (var time in medic.times) {
+        // Create a unique block for each `time` and `date`
+        final MedicInfo block = MedicInfo(
+          name: medic.name,
+          dosage: medic.dosage,
+          recurrence: medic.recurrence,
+          quantity: medic.quantity,
+          startDate:
+              currentDate.toIso8601String().substring(0, 10), // Specific date
+          endDate: medic.endDate,
+          times: [time], // Specific time
+        );
+
+        // Add only if this block doesn't already exist
+        if (!dailyBlocks.any((b) =>
+            b.name == block.name &&
+            b.startDate == block.startDate &&
+            b.times.first == block.times.first)) {
+          dailyBlocks.add(block);
+        }
+      }
+      currentDate = currentDate.add(const Duration(days: 1));
+    }
+
+    return dailyBlocks;
+  }
+
+  Future<void> fetchHistoryForLast30Days() async {
+    try {
+      final DateTime today = DateTime.now();
+      final DateTime thirtyDaysAgo = today.subtract(const Duration(days: 30));
+
+      List<MedicInfo> fetchedHistory = [];
+
+      for (int i = 0; i <= 30; i++) {
+        final DateTime currentDate = thirtyDaysAgo.add(Duration(days: i));
+
+        List<Map<String, Object?>> data = await readMedicinsforDate(
+          currentDate.day,
+          currentDate.month,
+          currentDate.year,
+        );
+
+        if (data.isNotEmpty) {
+          fetchedHistory.addAll(
+            data.map(
+                (e) => MedicInfo.fromJson(jsonDecode(e['data'].toString()))),
+          );
+        }
+      }
+
+      setState(() {
+        for (var medication in fetchedHistory) {
+          List<MedicInfo> dailyBlocks = generateDailyBlocks(medication);
+
+          for (var block in dailyBlocks) {
+            // Add block to allHistory only if it doesn't already exist
+            if (!allHistory.any((b) =>
+                b.name == block.name &&
+                b.startDate == block.startDate &&
+                b.times.first == block.times.first)) {
+              allHistory.add(block);
+            }
+          }
+        }
+
+        history = List.from(allHistory); // Update displayed list
+      });
+    } catch (e) {
+      debugPrint("Error fetching history for last 30 days: $e");
     } finally {
-      // Stop loading spinner regardless of the outcome
       setState(() {
         isLoading = false;
       });
@@ -96,10 +160,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void filterHistory(String query) {
     setState(() {
       if (query.isEmpty) {
-        // If search bar is empty, reset to the full list
-        history = List.from(allHistory);
+        history = List.from(allHistory); // Reset to all history
       } else {
-        // Filter based on the query
         history = allHistory
             .where((item) =>
                 item.name.toLowerCase().startsWith(query.toLowerCase()))
@@ -111,7 +173,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    fetchHistoryForYesterday(); // Fetch history for yesterday on initialization
+    fetchHistoryForLast30Days(); // Fetch last 30 days of history on initialization
   }
 
   @override
@@ -134,7 +196,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   hintText: "Search",
                   border: OutlineInputBorder(),
                 ),
-                onChanged: filterHistory, // Call filterHistory on text change
+                onChanged: filterHistory,
               ),
               const SizedBox(height: 20),
               if (isLoading)
