@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medapp/db/read_medicins.dart';
@@ -12,6 +13,7 @@ class MedicInfo {
   final int quantity;
   final String startDate;
   final String endDate;
+  bool? status;
   final List<String> times;
 
   MedicInfo({
@@ -22,6 +24,7 @@ class MedicInfo {
     required this.startDate,
     required this.endDate,
     required this.times,
+    this.status,
   });
 
   factory MedicInfo.fromJson(Map<String, dynamic> json) {
@@ -36,18 +39,37 @@ class MedicInfo {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'dosage': dosage,
+        'recurrence': recurrence,
+        'quantity': quantity,
+        'startDate': startDate,
+        'endDate': endDate,
+        'times': times,
+        'status': status,
+      };
+
   @override
-  String toString() {
-    return jsonEncode({
-      'name': name,
-      'dosage': dosage,
-      'recurrence': recurrence,
-      'quantity': quantity,
-      'startDate': startDate,
-      'endDate': endDate,
-      'times': times,
-    });
+  String toString() => jsonEncode(toJson());
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is MedicInfo &&
+        other.name == name &&
+        other.dosage == dosage &&
+        other.recurrence == recurrence &&
+        other.quantity == quantity &&
+        other.startDate == startDate &&
+        other.endDate == endDate &&
+        listEquals(other.times, times);
   }
+
+  @override
+  int get hashCode => Object.hash(
+      name, dosage, recurrence, quantity, startDate, endDate, times);
 }
 
 class HistoryScreen extends StatefulWidget {
