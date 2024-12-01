@@ -1,59 +1,71 @@
-// import 'package:flutter/material.dart';
-// import 'package:medapp/notifications.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await NotificationService.initNotifications(); // Initialize notifications
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Notification Test',
-//       home: NotificationTestScreen(),
-//     );
-//   }
-// }
-
-// class NotificationTestScreen extends StatefulWidget {
-//   @override
-//   _NotificationTestScreenState createState() => _NotificationTestScreenState();
-// }
-
-// class _NotificationTestScreenState extends State<NotificationTestScreen> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Notification Test'),
-//       ),
-//       body: Center(
-//         child: ElevatedButton(
-//           onPressed: () async {
-//             // Send a test notification on button press
-//             await NotificationService.sendTestNotification();
-//           },
-//           child: Text('Send Notification'),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:medapp/db/read_medicins.dart';
 import 'package:medapp/notifications.dart';
+import 'package:medapp/ui/add_medic.dart';
 import 'package:medapp/ui/home.dart';
+import 'package:workmanager/workmanager.dart';
 
-// // Initialize notification plugin
-// // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-// //     FlutterLocalNotificationsPlugin();
+//Initialize notification plugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    await checkAndSendNotifications();
+    return Future.value(true);
+  });
+}
+
+Future<void> checkAndSendNotifications() async {
+  final DateTime now = DateTime.now();
+  final int day = now.day;
+  final int month = now.month;
+  final int year = now.year;
+  final String currentHour = now.hour.toString();
+
+  try {
+    // Fetch today's medication data
+    final snapshot = await readMedicinsforDate(day, month, year);
+
+    for (var record in snapshot) {
+      final MedicInfo info =
+          const MedicInfo().fromString(record['data'].toString());
+
+      // Check if the current date is within startDate and endDate
+      final DateTime startDate =
+          DateFormat('d MMMM yyyy').parse(info.startDate);
+      final DateTime endDate = DateFormat('d MMMM yyyy').parse(info.endDate);
+
+      if (now.isAfter(startDate) &&
+          now.isBefore(endDate.add(const Duration(days: 1)))) {
+        // Check if the current hour matches any time in the list
+        for (String time in info.times) {
+          if (time == currentHour) {
+            // Send notification
+            await NotificationService.sendNotification(info.name, time);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    print("Error processing notifications: $e");
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initNotifications(); // Initialize notifications
+  // Initialize WorkManager for background tasks
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+
+  // Schedule periodic task
+  Workmanager().registerPeriodicTask(
+    'fetch_medic_data',
+    'fetchMedicDataTask',
+    frequency: const Duration(hours: 1),
+  );
 
   runApp(const MyApp());
 }
